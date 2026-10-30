@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Қалам — қазақ тіліндегі мәтіндерді жазуға арналған веб-құрал</title>
+<style>
+:root{--cream:#faf6ec;--ink:#2b2620;--gold:#b8862b;--brown:#6b4b29;--red:#c0392b;--green:#2e7d4f;--blue:#2a5d84}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--cream);color:var(--ink);font-family:'Segoe UI','Manrope',system-ui,sans-serif;line-height:1.6}
+header{background:linear-gradient(135deg,#3a2612,#1a1208);color:#f2e9d6;padding:24px 20px;text-align:center}
+header h1{font-size:28px;margin-bottom:4px}
+header p{opacity:.85;font-size:14px}
+main{max-width:1100px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:1fr 360px;gap:18px}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(0,0,0,.06);border:1px solid #e8dfc8}
+.card h2{font-size:18px;margin-bottom:12px;color:var(--brown);border-bottom:2px solid #f1e6cc;padding-bottom:6px}
+textarea{width:100%;min-height:260px;padding:14px;font-size:16px;border:2px solid #e0d6bc;border-radius:10px;resize:vertical;font-family:inherit;background:#fffef8}
+textarea:focus{outline:none;border-color:var(--gold)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{padding:10px 16px;border:none;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;transition:transform .08s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--gold);color:#fff}
+.btn-secondary{background:#eee;color:var(--ink)}
+.btn-ghost{background:transparent;border:1px solid #d8cdb0;color:var(--brown)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.stat{background:#f7f1e2;border-radius:8px;padding:8px;text-align:center}
+.stat b{display:block;font-size:20px;color:var(--brown)}
+.stat span{font-size:12px;opacity:.7}
+.score{font-size:46px;font-weight:800;text-align:center;padding:10px 0}
+.score.good{color:var(--green)} .score.mid{color:var(--gold)} .score.bad{color:var(--red)}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;margin:2px;background:#f1e6cc;color:var(--brown)}
+.errlist{list-style:none;max-height:420px;overflow:auto}
+.errlist li{padding:10px 12px;border-left:3px solid var(--red);background:#fbf2f0;margin-bottom:8px;border-radius:6px}
+.errlist li.ok{border-color:var(--green);background:#f2f9f5}
+.errlist .title{font-weight:700;margin-bottom:2px}
+.errlist .meta{font-size:13px;opacity:.8}
+.errlist .fix{margin-top:4px;font-family:monospace;background:#fff;padding:4px 6px;border-radius:4px;display:inline-block}
+.quote{background:#f7f1e2;border-left:4px solid var(--gold);padding:12px 14px;border-radius:6px;font-style:italic;margin-bottom:12px}
+.streak{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.streak .dot{width:26px;height:26px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:12px}
+.streak .dot.on{background:var(--gold);color:#fff}
+footer{text-align:center;padding:18px;opacity:.6;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>✒️ Қалам</h1>
+  <p>Қазақ тілінде мәтін жазуға, тексеруге және түзетуге арналған веб-құрал · «Қазақ тілін қолдануға арналған IT өнімдер»</p>
+</header>
+<main>
+  <section class="card">
+    <h2> Мәтін редакторы</h2>
+    <textarea id="txt" placeholder="Қазақ тілінде мәтін жазыңыз... Мысалы: бүгін ауа райы өте жақсы еді   бірақ мен далаға шыққым келмейді."></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" id="checkBtn">🔍 Тексеру</button>
+      <button class="btn btn-ghost" id="clearBtn">🧹 Тазарту</button>
+      <button class="btn btn-secondary" id="copyBtn">📋 Көшіру</button>
+      <button class="btn btn-ghost" id="sampleBtn">📝 Үлгі мәтін</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="w">0</b><span>Сөз</span></div>
+      <div class="stat"><b id="c">0</b><span>Таңба</span></div>
+      <div class="stat"><b id="s">0</b><span>Сөйлем</span></div>
+      <div class="stat"><b id="err">0</b><span>Қате</span></div>
+    </div>
+  </section>
+
+  <aside>
+    <div class="card">
+      <h2>Баға</h2>
+      <div class="score" id="score">—</div>
+      <div id="scoreLabel" style="text-align:center;opacity:.7;font-size:14px">мәтінді жазып, тексеріңіз</div>
+      <hr style="margin:12px 0;border:none;border-top:1px solid #eee">
+      <h2>Күнделікті үзінді</h2>
+      <div class="quote" id="quote">...</div>
+      <div class="streak" id="streak"></div>
+      <span class="badge" id="xpBadge">⚡ 0 XP</span>
+      <span class="badge" id="levelBadge">Дәреже 1</span>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h2> тексеру нәтижесі</h2>
+      <ul class="errlist" id="errs"><li class="ok"> Мәтін жоқ.</li></ul>
+    </div>
+  </aside>
+</main>
+<footer>© 2026 Қалам · ашық код · GitHub Pages</footer>
+
+<script>
+const latinToCyr={a:'а',b:'б',v:'в',g:'г',d:'д',e:'е',z:'з',i:'и',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',r:'р',s:'с',t:'т',u:'у',f:'ф',h:'х',c:'ц',ch:'ч',sh:'ш',q:'қ',ä:'ә',ö:'ө',ü:'ұ',y:'ы',w:'ў'};
+function rules(text){
+  const out=[];
+  if(!text.trim()){return out;}
+  // 1 capital first letter
+  const trimmed=text.trim();
+  if(/[а-яәөүұқғһі]/.test(trimmed[0]) && trimmed[0]!==trimmed[0].toUpperCase()){
+    out.push({title:'Бас әріп', meta:'Мәтін басы үлкен әріптен басталуы керек.', fix:'Алғашқы әріпті «'+trimmed[0].toUpperCase()+'» деп жазыңыз'});
+  }
+  // 2 double spaces
+  const ds=text.match(/  +/g);
+  if(ds){out.push({title:'Көптеген бос орын', meta:`${ds.length} жерде екі немесе одан көп бос орын бар.`, fix:'Бос орындарды бір-бірімен алмастырыңыз'});}
+  // 3 space before punctuation
+  const sb=text.match(/\s+([.,!?;:])/g);
+  if(sb){out.push({title:'Тыныс белгісі алдындағы бос орын', meta:`${sb.length} жағдай.`, fix:'Тыныс белгісі алдында бос орын қалдырмаңыз'});}
+  // 4 missing space after punctuation
+  const miss=text.match(/[.,!?;:][а-яА-ЯәөүұқғһіӘӨҮҰҚҒҺІ]/g);
+  if(miss){out.push({title:'Тыныс белгісінен кейінгі бос орын', meta:`${miss.length} жағдай.`, fix:'Тыныс белгісінен кейін бір бос орын қойыңыз'});}
+  // 5 latin letters
+  if(/[a-zA-Z]/.test(text)){
+    out.push({title:'Латын әріптері', meta:'Мәтінде латын әріптері бар. Қазақ тілінде кириллица қолданылады.', fix:'Қазақ әріптерін қолданыңыз (қ, ғ, ә, ө, ұ, ү, і, һ)'});}
+  // 6 final punctuation
+  const t=text.trim();
+  if(t && !/[.!?…]/.test(t[t.length-1])){
+    out.push({title:'Соңғы тыныс белгісі', meta:'Мәтін нүкте, сұрау немесе леп белгісімен аяқталуы керек.', fix:'Соңына «.» «?» немесе «!» қосыңыз'});
+  }
+  // 7 repeated words
+  const rep=text.match(/\b(\w+)\s+\1\b/gi);
+  if(rep){out.push({title:'Қайталама сөз', meta:`${rep.length} сөз қайталанып тұр.`, fix:'Артық сөзді алып тастаңыз'});}
+  // 8 long sentences
+  const sentences=text.split(/[.!?]/).filter(x=>x.trim());
+  sentences.forEach((st,i)=>{const w=st.trim().split(/\s+/).filter(Boolean).length;if(w>25){out.push({title:`Ұзын сөйлем (#${i+1})`,meta:`${w} сөз — оқу қиын.`,fix:'Сөйлемді екіге бөліңіз'});}});
+  // 9 digits
+  if(/\d/.test(text)){out.push({title:'Сандар',meta:'Мәтінде сандар бар. Мүмкін болса, сөзбен жазыңыз.',fix:'«5» → «бес»'});}
+  if(text.length<20){out.push({title:'Қысқа мәтін',meta:'Мәтін тым қысқа — кемінде 20 таңба жазыңыз.',fix:'Мәтінді кеңейтіңіз'});}
+  return out;
+}
+const quotes=[
+ "Тіл — елдің тірегі, халықтың жаны.",
+ "Білім — бағасы қымбат, жоғалмайтын қазына.",
+ "Сөз — сұлулық, тіл — тірек.",
+ "Ана тілі — адамның рухани қазынасы.",
+ "Тіл білмеген — жарты адам."
+];
+function updateStats(){
+ const t=document.getElementById('txt').value;
+ const words=t.trim()?t.trim().split(/\s+/).length:0;
+ const chars=t.length;
+ const sents=t.trim()?t.split(/[.!?]+/).filter(x=>x.trim()).length:0;
+ const res=rules(t);
+ document.getElementById('w').textContent=words;
+ document.getElementById('c').textContent=chars;
+ document.getElementById('s').textContent=sents;
+ document.getElementById('err').textContent=res.length;
+ const maxScore=100;
+ const score=Math.max(0,100-res.length*8);
+ const el=document.getElementById('score');
+ el.textContent=score;
+ el.className='score '+(score>=85?'good':score>=60?'mid':'bad');
+ document.getElementById('scoreLabel').textContent=score>=85?'Өте жақсы':score>=60?'Жақсы, бірақ түзету керек':'Қателер көп — тексеріңіз';
+ const ul=document.getElementById('errs');
+ if(!t.trim()){ul.innerHTML='<li class="ok">Мәтін жоқ.</li>';return;}
+ if(!res.length){ul.innerHTML='<li class="ok">✅ Қате табылмады! Мәтін таза.</li>';return;}
+ ul.innerHTML=res.map(r=>`<li><div class="title">${r.title}</div><div class="meta">${r.meta}</div><div class="fix">→ ${r.fix}</div></li>`).join('');
+}
+document.getElementById('txt').addEventListener('input',updateStats);
+document.getElementById('checkBtn').addEventListener('click',()=>{updateStats(); addXP(5);});
+document.getElementById('clearBtn').addEventListener('click',()=>{document.getElementById('txt').value='';updateStats();});
+document.getElementById('copyBtn').addEventListener('click',()=>{navigator.clipboard.writeText(document.getElementById('txt').value).then(()=>alert('Көшірілді!'));});
+document.getElementById('sampleBtn').addEventListener('click',()=>{
+ document.getElementById('txt').value='бүгін ауа райы өте жақсы еді   мен далаға шыққым келмейді.бірақ күн суық болды. Қазақ тілі әдемі тіл! 5 сөйлем';
+ updateStats();
+});
+// streak / xp
+function load(){try{return JSON.parse(localStorage.getItem('kalam')||'{}');}catch(e){return{}}}
+function save(d){localStorage.setItem('kalam',JSON.stringify(d));}
+function addXP(n){const d=load();d.xp=(d.xp||0)+n;d.days=d.days||{};const today=new Date().toISOString().slice(0,10);d.days[today]=1;save(d);renderGam();}
+function renderGam(){
+ const d=load();const xp=d.xp||0;
+ document.getElementById('xpBadge').textContent='⚡ '+xp+' XP';
+ const level=Math.floor(xp/100)+1;
+ document.getElementById('levelBadge').textContent='Дәреже '+level;
+ // last 7 days
+ const box=document.getElementById('streak');box.innerHTML='';
+ for(let i=6;i>=0;i--){
+   const dt=new Date();dt.setDate(dt.getDate()-i);
+   const key=dt.toISOString().slice(0,10);
+   const on=!!(d.days&&d.days[key]);
+   const div=document.createElement('div');div.className='dot '+(on?'on':'');div.textContent=on?'✓':'·';box.appendChild(div);
+ }
+}
+document.getElementById('quote').textContent='«'+quotes[Math.floor(Math.random()*quotes.length)]+'»';
+renderGam();
+updateStats();
+</script>
+</body>
+</html>
